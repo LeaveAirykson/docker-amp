@@ -1,0 +1,8 @@
+services:
+  apache:
+    container_name: apache
+    build: ./apache
+    volumes:
+      - ./www:/var/www
+      - ./apache/httpd.conf:/usr/local/apache2/conf/httpd.conf
+      - ./vhost:/usr/local/apache2/conf/extra/httpd-vhost.d

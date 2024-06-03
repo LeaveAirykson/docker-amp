@@ -1,0 +1,45 @@
+#!/bin/bash
+set -e
+
+damp_rootdir="$(dirname "$(readlink -f "$0")")"
+cmd="$1"
+
+function up {
+    cd "$damp_rootdir" && docker compose up -d
+}
+
+function down {
+    cd "$damp_rootdir" && docker compose down
+}
+
+function help {
+    echo -e "Docker AMP"
+    echo -e "A docker solution with an Apache, MySQL, PhpMyAdmin stack"
+}
+
+function connect {
+
+    if [[ -z "$1" ]]; then
+        echo "No container name provided!"
+        exit 1
+    fi
+
+    cd "$damp_rootdir"
+    docker run -it docker-amp-"$1" /bin/bash
+}
+
+case "$cmd" in
+up)
+    up
+    ;;
+down)
+    down
+    ;;
+
+c | connect)
+    connect "$2"
+    ;;
+*)
+    help
+    ;;
+esac
