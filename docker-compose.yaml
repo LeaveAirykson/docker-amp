@@ -12,10 +12,9 @@ services:
     #   - db
     volumes:
       - './www:/var/www'
-      - './log/apache:/var/log/apache2'
       - './vhost:/etc/apache2/sites-enabled'
       - './apache/startup.sh:/etc/apache2/startup.sh'
-      - './apache/apache2.conf:/etc/apache2/apache2.conf'
+      - './apache/fpm.conf:/etc/apache2/conf-enabled/fpm.conf'
   # db:
   #   container_name: damp_mysql
   #   image: mysql:8.4
