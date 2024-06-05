@@ -16,6 +16,7 @@ function setup {
     _f_step "Create folder structure"
     mkdir -vp "$damp_rootdir/vhost"
     mkdir -vp "$damp_rootdir/www"
+    mkdir -vp "$damp_rootdir/mysql"
 
     _f_step "Remove git repository"
     rm -rf "$damp_rootdir/.git"
@@ -23,17 +24,9 @@ function setup {
     rm .gitignore
 
     _f_step "Build container"
-    build
+    cd "$damp_rootdir" && docker compose build
 
     echo -e "${c_green}Damp setup finished!${c_reset}\n"
-}
-
-function up {
-    cd "$damp_rootdir" && docker compose up -d
-}
-
-function down {
-    cd "$damp_rootdir" && docker compose down
 }
 
 function _f_head {
@@ -62,6 +55,11 @@ function addvhost {
         read -rep "Folder name: " projectname
     done
 
+    # create folder if it does not exist yet
+    if ! [[ -d "$damp_rootdir/vhost" ]]; then
+        mkdir -p "$damp_rootdir/vhost"
+    fi
+
     # sanitize name and define paths to config and project dir
     projectname=${projectname,,}
     projectname=${projectname//[^[:alnum:]]/_}
@@ -78,13 +76,6 @@ function addvhost {
     read -rep "ServerName ($projectname.geg): " domain
     domain=${domain:="$projectname.geg"}
 
-    # ask if should be written to hosts file
-    while [[ $writetohost == "" ]]; do
-        read -rep "Write domain to your hosts file? (y/n): " writetohost
-    done
-
-    writetohost=${writetohost,,}
-
     # ask for document root
     read -rep "DocumentRoot (relative path): " docroot
 
@@ -96,9 +87,7 @@ function addvhost {
     project_docroot="$project_dir$docroot"
 
     # ask for php version
-    echo "Which PHP version should be used?"
-    echo "Notice: Make sure related fpm module gets installed in Dockerfile."
-    read -rep "(default: ${def_php}): " phpversion
+    read -rep "PHP version (${def_php}): " phpversion
     project_php=${phpversion:-$def_php}
 
     # show summary
@@ -143,8 +132,7 @@ function addvhost {
         echo "<?php phpinfo(); ?>" >"$project_dir/info.php"
     fi
 
-    _f_step "Restarting apache container"
-    restartapache
+    cd "$damp_rootdir" && docker compose restart apache
 
     _f_success "$projectname successfully added!"
 }
@@ -174,16 +162,9 @@ function removevhost {
     echo "config: $project_conf"
     rm "$project_conf"
 
-    # restart container
-    _f_step "Restarting apache container"
-    restartapache
+    cd "$damp_rootdir" && docker compose restart apache
 
     _f_success "$projectname successfully removed!"
-}
-
-function restartapache {
-    cd "$damp_rootdir"
-    docker compose restart apache
 }
 
 function help {
@@ -193,13 +174,8 @@ function help {
 
     echo -e "\nCommands"
     content="\nsetup${colsep}Starts damp setup${colsep}"
-    content="\nup${colsep}starts damp container${colsep}"
-    content+="\ndown${colsep}stops damp container${colsep}"
-    content+="\nadd [name]${colsep}Add new project${colsep}"
-    content+="\nremove [name]${colsep}Remove project${colsep}"
-    content+="\nlist${colsep}lists all projects${colsep}"
-    content+="\nbuild${colsep}builds damp container${colsep}"
-    content+="\nbuild --no-cache${colsep}builds damp container without cache${colsep}"
+    content+="\nproject add [name]${colsep}Add new project${colsep}"
+    content+="\nproject remove [name]${colsep}Remove project${colsep}"
     content+="\nconnect [name]${colsep}ssh connect to container with [name]${colsep}"
 
     echo -e "$content" | column -t -s "$colsep"
@@ -215,25 +191,16 @@ function connect {
     docker exec -it "damp_$1" /bin/bash
 }
 
-function list {
-    for file in "$damp_rootdir"/vhost/*.conf; do
-        basename "$file" .conf
-    done
-}
-
-function build {
-    cd "$damp_rootdir"
-    docker compose down && docker compose build "$@"
-}
-
 case "$cmd" in
 setup) setup ;;
-up | start) up ;;
-down | stop) down ;;
-build) build "${@:2}" ;;
-list | ls) list ;;
 connect | c) connect "$2" ;;
-add) addvhost "$2" ;;
-remove) removevhost "$2" ;;
-*) help ;;
+project)
+    case "$2" in
+    add) addvhost "$3" ;;
+    remove) removevhost "$3" ;;
+    *) list ;;
+    esac
+    ;;
+'') help ;;
+*) cd "$damp_rootdir" && docker compose "$@" ;;
 esac

@@ -29,38 +29,27 @@ A simple Apache MySQL PhpMyAdmin solution build with Docker
 └─ vhost/               # vhost files for projects
 ```
 
-## Installation
-
-Clone repository into a directory of your choice:
+## Setup
 
 ```shell
+# Clone repository into a directory of your choice
 git clone git@github.com:LeaveAirykson/docker-amp.git ~/projects/damp
-```
 
-Run setup
-
-```shell
-cd ~/projects/damp
-./damp setup
-# If you want to use damp command from everywhere make sure to symlink cli file:
+# Symlink damp executable to any path respected by your PATH variable to make it globally available.
 ln -s ~/projects/damp/damp ~/bin/damp
+
+# Create necessary folder structure and build container
+damp setup
+
+# Add first project (helloworld.dev)
+damp project add helloworld
+
+# Add domain to hosts file
+echo "127.0.0.1 helloworld.dev" | sudo tee -a /etc/hosts
+
+# Start up all container
+damp up -d
 ```
-
-## How to use
-
-Projects inside damp consist of 2 important paths:
-
-- `www/<project>` - This is the root directory of a project.
-- `vhost/<project>.conf` - The related vhost config file.
-
-These files can be created manually or easily created via damp cli script `damp add <project>`.
-
-Things to consider:
-
-- Project names should all be lowercased letters.
-- Place your project files inside `www/<project>` folders.
-- Damp will create project folders (`www/<project>`) if they do not exist.
-- You need to add the project domains to your `/etc/hosts` file to make them accessible.
 
 ## Commands
 
@@ -68,13 +57,39 @@ Things to consider:
 damp <command> [option]
 ```
 
-| command            | desc                                  |
-| ------------------ | ------------------------------------- |
-| `up`               | starts all damp container             |
-| `down`             | stops all damp container              |
-| `add [name]`       | Add new project                       |
-| `remove [name]`    | Remove project                        |
-| `list`             | lists all projects                    |
-| `build`            | builds damp container                 |
-| `build --no-cache` | builds damp container without cache   |
-| `connect [name]`   | ssh connect to container named [name] |
+The damp executable is a small wrapper around docker compose and consists of these commands:
+
+| command                 | desc                                             |
+| ----------------------- | ------------------------------------------------ |
+| `setup`                 | creates necessary structure and builds container |
+| `project add [name]`    | Add new project                                  |
+| `project remove [name]` | Remove a project                                 |
+| `connect [container]`   | ssh connect to specific container                |
+
+**Any other commands and arguments will be passed to `docker compose` inside the damp folder.**
+
+```shell
+damp up -d # => 'docker compose up -d'
+damp down  # => 'docker compose down'
+damp ps    # => 'docker compose ps'
+```
+
+## Projects
+
+Projects inside damp consist of 2 important paths:
+
+- `www/[name]` - This is the root directory of a project.
+- `vhost/[name].conf` - The related vhost config file.
+
+These files can be created manually or easily created via damp cli script:
+
+```shell
+damp project add [name]
+```
+
+Things to consider:
+
+- Project names should all be lowercased letters.
+- Place your project files inside the `www/[name]` folders.
+- Damp will create project folders (`www/[name]`) if they do not exist.
+- You need to add the project domains to your `/etc/hosts` file to make them accessible.
