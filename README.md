@@ -7,6 +7,7 @@ A simple Apache MySQL PhpMyAdmin solution build with Docker
 - Ubuntu 20.04
 - Apache 2.4
   - PHP 8.3 (FPM)
+  - PHP 8.1 (FPM)
 - MySQL 8.4
 - PhpMyAdmin
 
@@ -17,33 +18,31 @@ A simple Apache MySQL PhpMyAdmin solution build with Docker
 - Includes easy to use cli tool (damp) for quick project setups.
 - No need to restart/rebuild container on changes as the projects are persistent volume binds.
 
-## Folder Structure
-
-```
-├─ apache/
-│  ├─ Dockerfile        # Dockerfile for apache container (Based on ubuntu:20.04)
-│  └─ fpm.conf          # Default apache config for fpm module
-├─ damp                 # cli executable
-├─ docker-compose.yaml  # Docker compose file
-├─ www/                 # Document root directories for projects
-└─ vhost/               # vhost files for projects
-```
-
 ## Installation
 
 **Important:** Make sure you have git and docker installed before installing damp.
 
+1. Download latest release: <a href="https://github.com/LeaveAirykson/docker-amp/archive/refs/heads/master.zip" target="_blank">DAMP (.zip)</a> and unzip its content to a folder of your choice.
+
+2. For easier use symlink the damp script to any path included in your $PATH variable.
+
 ```shell
-# Clone repository into a directory of your choice
-git clone git@github.com:LeaveAirykson/docker-amp.git ~/projects/damp
-
-# One time install script to create folder structure
-# and initially build container
-~/projects/damp/install.sh
-
-# Symlink damp executable to any path respected by your
-# $PATH variable to make it globally available.
 ln -s ~/projects/damp/damp ~/bin/damp
+```
+
+## Files
+
+```
+├─ apache/
+│  ├─ Dockerfile        # Dockerfile for apache container
+│  ├─ fpm.conf          # FPM Module configuration
+│  ├─ startup.sh        # Apache startup script
+│  └─ vhost.conf.tpl    # Template for vhost configs
+├─ damp                 # cli executable
+├─ docker-compose.yaml  # Docker compose file
+├─ mysql/               # Mysql database files (autocreated)
+├─ www/                 # Project directories (autocreated)
+└─ vhost/               # Vhost configs (autocreated)
 ```
 
 ## Commands
@@ -87,4 +86,4 @@ Things to consider:
 - Project names should all be lowercased letters.
 - Place your project files inside the `www/[name]` folders.
 - Damp will create project folders (`www/[name]`) if they do not exist.
-- You need to add the project domains to your `/etc/hosts` file to make them accessible.
+- Project domains will be added to `/etc/hosts` file to make them accessible.
