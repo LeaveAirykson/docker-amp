@@ -112,7 +112,7 @@ function addvhost {
     _f_step "Creating vhost config"
 
     vhost_docroot="/var/www/$projectname$docroot"
-    vhost_content=$(cat "$damp_rootdir/apache/vhost.def.conf")
+    vhost_content=$(cat "$damp_rootdir/apache/vhost.conf.tpl")
     vhost_content=${vhost_content//"%DAMP_DOCROOT%"/"$vhost_docroot"}
     vhost_content=${vhost_content//"%DAMP_SERVERNAME%"/"$domain"}
     vhost_content=${vhost_content//"%DAMP_PHP%"/"$project_php"}
