@@ -193,6 +193,20 @@ function connect {
     docker exec -it "damp_$1" /bin/bash
 }
 
+# make sure folder structure exists
+if ! [[ -d "$damp_rootdir/www" ]]; then
+    mkdir -p "$damp_rootdir/www"
+fi
+
+if ! [[ -d "$damp_rootdir/mysql" ]]; then
+    mkdir -p "$damp_rootdir/mysql"
+fi
+
+if ! [[ -d "$damp_rootdir/vhost" ]]; then
+    mkdir -p "$damp_rootdir/vhost"
+fi
+
+# handle execution
 case "$cmd" in
 connect | c) connect "$2" ;;
 project)
