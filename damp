@@ -12,23 +12,6 @@ c_green="\033[0;32m"
 c_reset="\033[0m"
 c_red="\033[0;31m"
 
-function setup {
-    _f_step "Create folder structure"
-    mkdir -vp "$damp_rootdir/vhost"
-    mkdir -vp "$damp_rootdir/www"
-    mkdir -vp "$damp_rootdir/mysql"
-
-    _f_step "Remove git repository"
-    rm -rf "$damp_rootdir/.git"
-    rm -rf ".vscode"
-    rm .gitignore
-
-    _f_step "Build container"
-    cd "$damp_rootdir" && docker compose build
-
-    echo -e "${c_green}Damp setup finished!${c_reset}\n"
-}
-
 function _f_head {
     echo -e "\n${c_yellow}$1${c_reset}"
 }
@@ -65,6 +48,7 @@ function addvhost {
     projectname=${projectname//[^[:alnum:]]/_}
     project_conf="$damp_rootdir/vhost/$projectname.conf"
     project_dir="$damp_rootdir/www/$projectname"
+    add_vhost="Yes"
 
     # check if name is already used
     if [ -f "$project_conf" ]; then
@@ -75,6 +59,17 @@ function addvhost {
     # ask for server name
     read -rep "ServerName ($projectname.geg): " domain
     domain=${domain:="$projectname.geg"}
+
+    # ask for domain to be added to hosts file
+    while [[ -z "$addvhost" ]]; do
+        read -rep "Add domain entry to /etc/hosts? (y/n): " addvhost
+    done
+
+    addvhost=${addvhost,,}
+
+    if [[ "$addvhost" != "y" ]]; then
+        add_vhost="No"
+    fi
 
     # ask for document root
     read -rep "DocumentRoot (relative path): " docroot
@@ -96,6 +91,7 @@ function addvhost {
     content+="\nServerName:${colsep}$domain${colsep}"
     content+="\nDocumentRoot:${colsep}$project_docroot${colsep}"
     content+="\nPHP:${colsep}$project_php${colsep}"
+    content+="\nAdd host entry:${colsep}$add_vhost${colsep}"
 
     echo -e "$content" | column -t -s "$colsep"
 
@@ -132,6 +128,13 @@ function addvhost {
         echo "<?php phpinfo(); ?>" >"$project_dir/info.php"
     fi
 
+    # Add domain to hosts file
+    if [[ "$add_vhost" == "Yes" ]]; then
+        _f_step "Add $domain to /etc/hosts"
+        echo "127.0.0.1 $domain" | sudo tee -a /etc/hosts
+    fi
+
+    _f_step "Restart apache container"
     cd "$damp_rootdir" && docker compose restart apache
 
     _f_success "$projectname successfully added!"
@@ -173,7 +176,6 @@ function help {
     echo -e "USAGE: damp <command> [arguments]"
 
     echo -e "\nCommands"
-    content="\nsetup${colsep}Starts damp setup${colsep}"
     content+="\nproject add [name]${colsep}Add new project${colsep}"
     content+="\nproject remove [name]${colsep}Remove project${colsep}"
     content+="\nconnect [name]${colsep}ssh connect to container with [name]${colsep}"
@@ -192,7 +194,6 @@ function connect {
 }
 
 case "$cmd" in
-setup) setup ;;
 connect | c) connect "$2" ;;
 project)
     case "$2" in

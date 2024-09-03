@@ -29,26 +29,21 @@ A simple Apache MySQL PhpMyAdmin solution build with Docker
 └─ vhost/               # vhost files for projects
 ```
 
-## Setup
+## Installation
+
+**Important:** Make sure you have git and docker installed before installing damp.
 
 ```shell
 # Clone repository into a directory of your choice
 git clone git@github.com:LeaveAirykson/docker-amp.git ~/projects/damp
 
-# Symlink damp executable to any path respected by your PATH variable to make it globally available.
+# One time install script to create folder structure
+# and initially build container
+~/projects/damp/install.sh
+
+# Symlink damp executable to any path respected by your
+# $PATH variable to make it globally available.
 ln -s ~/projects/damp/damp ~/bin/damp
-
-# Create necessary folder structure and build container
-damp setup
-
-# Add first project (helloworld.dev)
-damp project add helloworld
-
-# Add domain to hosts file
-echo "127.0.0.1 helloworld.dev" | sudo tee -a /etc/hosts
-
-# Start up all container
-damp up -d
 ```
 
 ## Commands
@@ -59,17 +54,17 @@ damp <command> [option]
 
 The damp executable is a small wrapper around docker compose and consists of these commands:
 
-| command                 | desc                                             |
-| ----------------------- | ------------------------------------------------ |
-| `setup`                 | creates necessary structure and builds container |
-| `project add [name]`    | Add new project                                  |
-| `project remove [name]` | Remove a project                                 |
-| `connect [container]`   | ssh connect to specific container                |
+| command                 | desc                              |
+| ----------------------- | --------------------------------- |
+| `project add [name]`    | Add new project                   |
+| `project remove [name]` | Remove a project                  |
+| `connect [container]`   | ssh connect to specific container |
 
 **Any other commands and arguments will be passed to `docker compose` inside the damp folder.**
 
 ```shell
 damp up -d # => 'docker compose up -d'
+damp start # => 'docker compose start'
 damp down  # => 'docker compose down'
 damp ps    # => 'docker compose ps'
 ```
