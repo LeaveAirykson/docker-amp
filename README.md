@@ -16,7 +16,7 @@ A simple Apache MySQL PhpMyAdmin solution build with Docker
 - Setup supports multiple PHP versions via FPM modules and can be set per project.
 - Provides usage of local development domains (no localhost:80 or something).
 - Includes easy to use cli tool (damp) for quick project setups.
-- No need to restart/rebuild container on changes as the projects are persistent volume binds.
+- No need to restart/rebuild container on changes inside projects, as the projects are persistent volume binds.
 
 ## Installation
 
