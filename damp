@@ -5,7 +5,7 @@ damp_rootdir="$(dirname "$(readlink -f "$0")")"
 cmd="$1"
 colsep="%"
 def_php="8.3"
-damp_version="1.0.0"
+damp_version="1.0.1"
 damp_url="https://github.com/LeaveAirykson/docker-amp/archive/refs/heads/master.zip"
 
 c_yellow="\033[0;33m"
@@ -164,7 +164,7 @@ function addvhost {
     # Add domain to hosts file
     if [[ "$add_vhost" == "Yes" ]]; then
         _f_step "Add $domain to /etc/hosts"
-        echo "127.0.0.1 $domain" | sudo tee -a /etc/hosts
+        echo -e "# $projectname\n127.0.0.1 $domain" | sudo tee -a /etc/hosts
     fi
 
     _f_step "Restart apache container"
@@ -197,6 +197,12 @@ function removevhost {
     _f_step "Removing vhost config"
     echo "config: $project_conf"
     rm "$project_conf"
+
+    # Remove domain from /etc/hosts
+    if grep -q "# $projectname" /etc/hosts; then
+        _f_step "Remove $projectname from /etc/hosts"
+        sudo sed -i "/# $projectname/,+1d" /etc/hosts
+    fi
 
     cd "$damp_rootdir" && docker compose restart apache
 
