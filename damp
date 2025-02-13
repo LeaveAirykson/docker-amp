@@ -49,12 +49,14 @@ function setup {
 
 function update {
     _f_head "Updating damp..."
+
     wget -O /tmp/damp.zip "$damp_url" -q --show-progress
-    unzip -o /tmp/damp.zip -d /tmp
+    unzip -q -o /tmp/damp.zip -d /tmp
+
     cp /tmp/docker-amp-master/* "$damp_rootdir" -r
     rm -rf /tmp/docker-amp-master /tmp/damp.zip
 
-    _f_success "Damp updated!"
+    _f_success "Update successfully completed!"
 
     damp -v
 }
