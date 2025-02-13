@@ -14,7 +14,7 @@ services:
       - './www:/var/www'
       - './vhost:/etc/apache2/sites-enabled'
       - './apache/startup.sh:/etc/apache2/startup.sh'
-      - './apache/fpm.conf:/etc/apache2/conf-enabled/fpm.conf'
+      - './apache/logs:/var/log/apache2'
   db:
     container_name: damp_mysql
     image: mysql:8.4

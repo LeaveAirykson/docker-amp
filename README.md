@@ -7,7 +7,6 @@ A simple Apache MySQL PhpMyAdmin solution build with Docker
 - Ubuntu 20.04
 - Apache 2.4
   - PHP 8.3 (FPM)
-  - PHP 8.1 (FPM)
 - MySQL 8.4
 - PhpMyAdmin
 
@@ -24,10 +23,16 @@ A simple Apache MySQL PhpMyAdmin solution build with Docker
 
 1. Download latest release: <a href="https://github.com/LeaveAirykson/docker-amp/archive/refs/heads/master.zip" target="_blank">DAMP (.zip)</a> and unzip its content to a folder of your choice.
 
-2. For easier use symlink the damp script to any path included in your $PATH variable.
+2. To use cli command, symlink the damp executable to any path included in your `$PATH` variable.
 
 ```shell
 ln -s ~/projects/damp/damp ~/bin/damp
+```
+
+3. Run the setup command
+
+```shell
+damp setup
 ```
 
 ## Files
@@ -35,7 +40,6 @@ ln -s ~/projects/damp/damp ~/bin/damp
 ```
 ├─ apache/
 │  ├─ Dockerfile        # Dockerfile for apache container
-│  ├─ fpm.conf          # FPM Module configuration
 │  ├─ startup.sh        # Apache startup script
 │  └─ vhost.conf.tpl    # Template for vhost configs
 ├─ damp                 # cli executable
@@ -55,8 +59,11 @@ The damp executable is a small wrapper around docker compose and consists of the
 
 | command                 | desc                              |
 | ----------------------- | --------------------------------- |
+| `setup`                 | Run initial damp setup            |
+| `update`                | Update damp                       |
 | `project add [name]`    | Add new project                   |
 | `project remove [name]` | Remove a project                  |
+| `project list`          | List all projects                 |
 | `connect [container]`   | ssh connect to specific container |
 
 **Any other commands and arguments will be passed to `docker compose` inside the damp folder.**

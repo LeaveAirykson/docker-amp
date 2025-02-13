@@ -31,6 +31,8 @@ RUN apt-get update -y --fix-missing
 # enable apache modules and configs
 RUN a2dismod php8.3 mpm_prefork mpm_worker
 RUN a2enmod mpm_event rewrite proxy proxy_fcgi setenvif headers alias fcgid actions
+RUN a2enconf php8.3-fpm
+
 RUN service apache2 restart
 
 # start apache
