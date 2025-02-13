@@ -5,6 +5,8 @@ damp_rootdir="$(dirname "$(readlink -f "$0")")"
 cmd="$1"
 colsep="%"
 def_php="8.3"
+damp_version="1.0.0"
+damp_url="https://github.com/LeaveAirykson/docker-amp/archive/refs/heads/master.zip"
 
 c_yellow="\033[0;33m"
 c_cyan="\033[0;36m"
@@ -26,6 +28,35 @@ function _f_success {
 
 function _f_error {
     echo -e "${c_red}$1${c_reset}"
+}
+
+function setup {
+    if [[ -d "$damp_rootdir/www" ]]; then
+        echo -e "Damp seems to be setup already!"
+        exit 0
+    fi
+
+    _f_step "Create folder structure"
+    mkdir -vp "$damp_rootdir/vhost"
+    mkdir -vp "$damp_rootdir/www"
+    mkdir -vp "$damp_rootdir/mysql"
+
+    _f_step "Build container"
+    cd "$damp_rootdir" && docker compose build --no-cache
+
+    echo -e "${c_green}Damp setup finished!${c_reset}\n"
+}
+
+function update {
+    _f_head "Updating damp..."
+    wget -O /tmp/damp.zip "$damp_url" -q --show-progress
+    unzip -o /tmp/damp.zip -d /tmp
+    cp /tmp/docker-amp-master/* "$damp_rootdir" -r
+    rm -rf /tmp/docker-amp-master /tmp/damp.zip
+
+    _f_success "Damp updated!"
+
+    damp -v
 }
 
 function addvhost {
@@ -170,12 +201,27 @@ function removevhost {
     _f_success "$projectname successfully removed!"
 }
 
+function list_projects {
+    _f_head "Projects"
+
+    if ! [[ -d "$damp_rootdir/vhost" ]]; then
+        _f_error "No projects found!"
+        exit 0
+    fi
+
+    for project in "$damp_rootdir/vhost"/*.conf; do
+        projectname=$(basename "$project" .conf)
+        echo -e "$projectname"
+    done
+}
+
 function help {
     echo -e "Docker AMP"
     echo -e "A docker solution with an Apache, MySQL, PhpMyAdmin stack\n"
     echo -e "USAGE: damp <command> [arguments]"
 
     echo -e "\nCommands"
+    content="\nsetup${colsep}Starts damp setup${colsep}"
     content+="\nproject add [name]${colsep}Add new project${colsep}"
     content+="\nproject remove [name]${colsep}Remove project${colsep}"
     content+="\nconnect [name]${colsep}ssh connect to container with [name]${colsep}"
@@ -193,27 +239,18 @@ function connect {
     docker exec -it "damp_$1" /bin/bash
 }
 
-# make sure folder structure exists
-if ! [[ -d "$damp_rootdir/www" ]]; then
-    mkdir -p "$damp_rootdir/www"
-fi
-
-if ! [[ -d "$damp_rootdir/mysql" ]]; then
-    mkdir -p "$damp_rootdir/mysql"
-fi
-
-if ! [[ -d "$damp_rootdir/vhost" ]]; then
-    mkdir -p "$damp_rootdir/vhost"
-fi
-
 # handle execution
 case "$cmd" in
+setup) setup ;;
 connect | c) connect "$2" ;;
+update) update ;;
+version | -v | --version) echo "$damp_version" ;;
 project)
     case "$2" in
     add) addvhost "$3" ;;
     remove) removevhost "$3" ;;
-    *) list ;;
+    list) list_projects ;;
+    *) list_projects ;;
     esac
     ;;
 '') help ;;
